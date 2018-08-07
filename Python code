@@ -1,0 +1,83 @@
+"""
+Python3.x
+VirusTotal Api interaction
+"""
+
+import requests
+import json
+import time
+import sys
+import os
+
+"""
+stuurt een POST met een file (file dient wel in dezelfde directory te zitten).
+"""
+#We maken een variable van de naam van het bestand dat we willen uploaden en de Apikey
+apikey = "b2ece7792dc952c5e657bc76ef3bf30277fadadf474cab4f87f6f4f40e068253"
+dir = os.listdir()
+done = []
+file = 1
+
+proxies = {
+  "http": "http://127.0.0.1:50480"
+  }
+
+def end():
+  print ("all files seem to be done, We're done here. stopping..")
+
+
+def decider():
+  global file
+  global done
+  file = dir[1]
+  done.append(dir[1])
+  dir.__delitem__(1)
+
+def start():
+  global file
+  global done
+  decider()
+  print ("We are checking: ", dir[1], "!")
+  #params worden meegestuurd met de POST message zodat de virustotal API onze key en file kan begrijpen
+  params = {'apikey': apikey}
+  files = {'file': (file, open(file, 'rb'))}
+
+  #hier sturen we de post samen met de params
+  response = requests.post('https://www.virustotal.com/vtapi/v2/file/scan', files=files, params=params)
+
+  #We krijgen een .Json bestand terug, hier maken we een variable van het bestandje
+  json_response = response.json()
+
+  #Uit de Json response halen de de key sha256 en maken hier een variable van om later te gebruiken
+  sha = (json_response['sha256'])
+
+  #We wachten X seconden om VirusTotal de tijd te geven om het bestand te onderzoeken
+  time.sleep(120)
+
+  """
+  Na het wachten van een aantal seconden kunnen we het antwoord opvragen.
+  """
+
+  del json_response
+
+  #parameters hierbij zijn de apikey en de de variable sha (de originele sha256 die VirusTotal eerder heeft doorgegeven
+  params = {'apikey': apikey, 'resource': sha}
+  headers = {
+    "Accept-Encoding": "gzip, deflate",
+    "User-Agent" : "gzip,  My Python requests library example client or username"
+    }
+  #hier sturen we de GET request samen met de key en resource(sha) variables
+  response = requests.get('https://www.virustotal.com/vtapi/v2/file/report',
+    params=params, headers=headers)
+  #We maken wederom een variable van de response
+  json_conclusion = response.json()
+  #for key in json_conclusion:
+  #    print (key)
+  print (json_conclusion['positives'])
+  answer = json_conclusion['positives']
+  print (answer)
+while dir[1] != 'zzend':
+  start()
+else:
+  print ("all done")
+
