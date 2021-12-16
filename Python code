@@ -13,7 +13,7 @@ import os
 stuurt een POST met een file (file dient wel in dezelfde directory te zitten).
 """
 #We maken een variable van de naam van het bestand dat we willen uploaden en de Apikey
-apikey = "b2ece7792dc952c5e657bc76ef3bf30277fadadf474cab4f87f6f4f40e068253"
+apikey =
 dir = os.listdir()
 done = []
 file = 1
